@@ -66,74 +66,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate-binary-datasets:
-    name: generate binary dataset
-    needs: [ sanity-checks, python-format ]
-    runs-on: lbug-self-hosted-testing
-    if: false
-    env:
-      NUM_THREADS: 32
-      GEN: Ninja
-      CC: gcc
-      CXX: g++
-      GCS_ACCESS_KEY_ID: ${{ secrets.GCS_ACCESS_KEY_ID }}
-      GCS_SECRET_ACCESS_KEY: ${{ secrets.GCS_SECRET_ACCESS_KEY }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build
-        run: make release
-
-      # Generate the binary db once to test that it can be read on all platforms.
-      - name: Generate datasets
-        run: bash scripts/generate_binary_demo.sh
-
-      - name: Upload binary-demo
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-demo
-          path: dataset/binary-demo
-
-      - name: Generate and upload tinysnb
-        run: |
-          version_current="$(python3 benchmark/version.py)"
-          echo "0" > version_s3.txt
-          echo "0" > version_gcs.txt
-          s3cmd get --force s3://lbug-test/tinysnb/version.txt version_s3.txt || true
-          s3cmd --access_key=${GCS_ACCESS_KEY_ID} --secret_key=${GCS_SECRET_ACCESS_KEY} --host=storage.googleapis.com --host-bucket="%(bucket)s.storage.googleapis.com" get --force s3://lbugdb-test/tinysnb/version.txt version_gcs.txt || true
-          if [[ "$version_current" == "$(cat version_s3.txt)" ]] && [[ "$version_current" == "$(cat version_gcs.txt)" ]]; then
-            echo "TinySNB dataset is up to date, skipping upload"
-            rm -rf tinysnb version_s3.txt version_gcs.txt
-            exit 0
-          fi
-          echo "TinySNB dataset is outdated, uploading..."
-          bash scripts/generate_binary_tinysnb.sh
-          s3cmd del -r s3://lbug-test/tinysnb/
-          s3cmd sync ./tinysnb s3://lbug-test/
-          # s3cmd del -r doesn't work on GCS so we individually delete each object in the directory
-          for gcs_file in $(s3cmd --access_key=${GCS_ACCESS_KEY_ID} --secret_key=${GCS_SECRET_ACCESS_KEY} --host=storage.googleapis.com --host-bucket="%(bucket)s.storage.googleapis.com" ls s3://lbugdb-test/tinysnb/ | awk '{ print $4 }');
-          do
-              s3cmd --access_key=${GCS_ACCESS_KEY_ID} --secret_key=${GCS_SECRET_ACCESS_KEY} --host=storage.googleapis.com --host-bucket="%(bucket)s.storage.googleapis.com" del ${gcs_file}
-          done
-          s3cmd --access_key=${GCS_ACCESS_KEY_ID} --secret_key=${GCS_SECRET_ACCESS_KEY} --host=storage.googleapis.com --host-bucket="%(bucket)s.storage.googleapis.com" sync ./tinysnb s3://lbugdb-test/
-          rm -rf tinysnb version_s3.txt version_gcs.txt
-
-      - name: Generate and upload ldbc-sf01
-        run: |
-          version_current="$(python3 benchmark/version.py)"
-          echo "0" > version_s3.txt
-          s3cmd get --force s3://lbug-test/ldbc01/version.txt version_s3.txt || true
-          if [[ "$version_current" == "$(cat version_s3.txt)" ]]; then
-            echo "LDBC-SF01 dataset is up to date, skipping upload"
-            rm -rf ldbc01 version_s3.txt
-            exit 0
-          fi
-          echo "LDBC-SF01 dataset is outdated, uploading..."
-          bash scripts/generate_binary_ldbc-sf01.sh
-          s3cmd del -r s3://lbug-test/ldbc01/
-          s3cmd sync ./ldbc01 s3://lbug-test/
-          rm -rf ldbc01 version_s3.txt
-
   sanity-checks:
     name: sanity checks
     runs-on: ubuntu-24.04
@@ -172,36 +104,6 @@ jobs:
 
       - name: Clang Format (${{ matrix.directory }})
         run: ./scripts/run-clang-format-docker.sh
-
-  python-format:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Install uv
-        run: pip3 install uv
-
-      - name: Python API format check
-        working-directory: tools/python_api
-        run: make check
-
-  rust-format:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Update Rust
-        run: rustup update
-
-      - name: Rust API format check
-        working-directory: tools/rust_api
-        run: cargo fmt --all --check
 
   minimal-test:
     name: minimal test
