@@ -3,10 +3,10 @@ name: CI Workflow
 on:
   pull_request:
     branches:
-      - master
+      - main
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
     inputs:
       auto_checkpoint:
@@ -57,7 +57,7 @@ env:
   PIP_BREAK_SYSTEM_PACKAGES: 1
 
 # Only allow one run in this group to run at a time, and cancel any runs in progress in this group.
-# We use the workflow name and then add the pull request number, or (if it's a push to master), we use the name of the branch.
+# We use the workflow name and then add the pull request number, or (if it's a push to main), we use the name of the branch.
 # See github's docs[1] and a relevant stack overflow answer[2]
 #   [1]: https://docs.github.com/en/actions/using-jobs/using-concurrency
 #   [2]: https://stackoverflow.com/questions/66335225/how-to-cancel-previous-runs-in-the-pr-when-you-push-new-commitsupdate-the-curre
@@ -220,7 +220,7 @@ jobs:
           key: minimal-test-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            minimal-test-${{ runner.os }}-refs/heads/master
+            minimal-test-${{ runner.os }}-refs/heads/main
             minimal-test-${{ runner.os }}-
 
       - name: Build
@@ -281,7 +281,7 @@ jobs:
           key: minimal-extension-test-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            minimal-extension-test-${{ runner.os }}-refs/heads/master
+            minimal-extension-test-${{ runner.os }}-refs/heads/main
             minimal-extension-test-${{ runner.os }}-
 
       - name: Update PostgreSQL host

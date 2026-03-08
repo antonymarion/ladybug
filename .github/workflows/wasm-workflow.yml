@@ -75,7 +75,7 @@ jobs:
           key: wasm-package-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            wasm-package-${{ runner.os }}-refs/heads/master
+            wasm-package-${{ runner.os }}-refs/heads/main
             wasm-package-${{ runner.os }}-
 
       - name: Setup ccache (test)
@@ -85,7 +85,7 @@ jobs:
           key: wasm-test-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            wasm-test-${{ runner.os }}-refs/heads/master
+            wasm-test-${{ runner.os }}-refs/heads/main
             wasm-test-${{ runner.os }}-
 
       - name: Configure ccache for Emscripten
@@ -142,7 +142,7 @@ jobs:
           key: wasm-test-single-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            wasm-test-single-${{ runner.os }}-refs/heads/master
+            wasm-test-single-${{ runner.os }}-refs/heads/main
             wasm-test-single-${{ runner.os }}-
 
       - name: Configure ccache for single-threaded build

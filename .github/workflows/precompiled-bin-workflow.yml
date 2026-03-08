@@ -50,7 +50,7 @@ jobs:
           key: precompiled-bin-${{ runner.os }}-${{ runner.arch }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            precompiled-bin-${{ runner.os }}-${{ runner.arch }}-refs/heads/master
+            precompiled-bin-${{ runner.os }}-${{ runner.arch }}-refs/heads/main
             precompiled-bin-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Setup ccache (macOS)
@@ -60,7 +60,7 @@ jobs:
           key: precompiled-bin-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            precompiled-bin-${{ runner.os }}-refs/heads/master
+            precompiled-bin-${{ runner.os }}-refs/heads/main
             precompiled-bin-${{ runner.os }}-
 
       - name: Setup ccache (Windows)
@@ -70,7 +70,7 @@ jobs:
           key: precompiled-bin-${{ runner.os }}-${{ github.ref }}
           max-size: 2G
           restore-keys: |
-            precompiled-bin-${{ runner.os }}-refs/heads/master
+            precompiled-bin-${{ runner.os }}-refs/heads/main
             precompiled-bin-${{ runner.os }}-
 
       - name: Update nightly version
