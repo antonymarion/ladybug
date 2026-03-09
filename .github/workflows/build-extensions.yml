@@ -25,6 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Update submodules
+        run: git submodule update --init extension
+
       - name: Install DuckDB (Linux)
         if: runner.os == 'Linux'
         run: |

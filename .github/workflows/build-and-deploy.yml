@@ -224,7 +224,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update submodules
-        run: git submodule update --init --recursive tools/java_api
+        run: git submodule update --init --recursive tools/java_api dataset
 
       - name: Install uv
         run: python3 -m pip install uv
@@ -383,7 +383,14 @@ jobs:
           if [ "${{ github.event.inputs.isNightly }}" = "true" ]; then
             TAG=next
           fi
-          npm publish lbug-source.tar.gz --access public --tag "${TAG}" --dry-run
+          PACKAGE_NAME="$(tar -xOf lbug-source.tar.gz package/package.json | node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write(pkg.name)")"
+          PACKAGE_VERSION="$(tar -xOf lbug-source.tar.gz package/package.json | node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write(pkg.version)")"
+          PACKAGE_REF="${PACKAGE_NAME}@${PACKAGE_VERSION}"
+          if npm view "${PACKAGE_REF}" version >/dev/null 2>&1; then
+            echo "Version ${PACKAGE_VERSION} already published; skipping dry-run publish."
+          else
+            npm publish lbug-source.tar.gz --access public --tag "${TAG}" --dry-run
+          fi
         working-directory: tools/nodejs_api
 
       - name: Deploy nightly to npm.js
