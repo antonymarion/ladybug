@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update submodules
-        run: git submodule update --init --recursive tools/nodejs_api
+        run: git submodule update --init --recursive tools/nodejs_api dataset
 
       - name: Update nightly version
         if: ${{ inputs.isNightly == true }}
@@ -71,6 +71,11 @@ jobs:
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.mac_env && '13.3' || '' }}
           ARCHFLAGS: ${{ matrix.mac_env && format('-arch {0}', matrix.arch) || '' }}
+
+      - name: Install Node.js dependencies (non-Windows, tests)
+        if: ${{ matrix.platform != 'win32' }}
+        working-directory: tools/nodejs_api
+        run: npm i
 
       - name: Install Node.js dependencies (Windows)
         if: ${{ matrix.platform == 'win32' }}
@@ -121,6 +126,14 @@ jobs:
           ccache -s
           make GEN=Ninja nodejs
           ccache -s
+
+      - name: Build Node.js native module (non-Windows)
+        if: ${{ matrix.platform != 'win32' }}
+        run: make GEN=Ninja nodejs
+
+      - name: Run Node.js tests
+        working-directory: tools/nodejs_api
+        run: npm test
 
       - name: Move Node.js native module (Linux)
         if: ${{ matrix.platform == 'linux' }}
