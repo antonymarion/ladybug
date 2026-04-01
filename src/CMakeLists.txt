@@ -41,7 +41,11 @@ if(WIN32)
         target_compile_definitions(lbug INTERFACE LBUG_STATIC_DEFINE)
 endif()
 
-if(NOT WIN32)
+if(EMSCRIPTEN)
+        # Emscripten forces SHARED->STATIC, so give it a distinct name to avoid
+        # two targets both emitting liblbug.a (Ninja rejects duplicate rules).
+        set_target_properties(lbug_shared PROPERTIES OUTPUT_NAME lbug_shared)
+elseif(NOT WIN32)
         set_target_properties(lbug_shared PROPERTIES OUTPUT_NAME lbug)
 endif()
 
