@@ -141,6 +141,10 @@ jobs:
         run: ls -l
         working-directory: dist
 
+      - name: Clean up existing attestation files
+        run: rm -f dist/*.publish.attestation
+        working-directory: dist
+
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
